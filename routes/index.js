@@ -12,7 +12,7 @@ router.get('/', function(req, res, next) {
       { new: true, upsert: true },
       function(err, account) {
         req.session.hatToken = appConfig.hatAccessToken;
-        res.render('index', { title: 'HAT Sync Tools', facebookAppId: process.env.FB_APP_ID });
+        res.render('index', { title: 'HAT Sync Tools'});
       }
     );
   } else {

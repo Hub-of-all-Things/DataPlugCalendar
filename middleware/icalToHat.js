@@ -1,18 +1,19 @@
 var request = require('request');
 var qs = require('qs');
 var async = require('async');
+var ICAL = require('ical.js');
 var _ = require('lodash');
 var config = require('../config');
-var fbFieldsConfig = require('../config/fbHatModels');
-var fbReqGen = require('../config/fbFields');
+var icalFieldsConfig = require('../config/icalHatModels');
+var icalReqGen = require('../config/icalFields');
 var Accounts = require('../models/accounts');
 
 module.exports = (function() {
   var publicObject = {};
   var state = {};
 
-  publicObject.initialRun = function(node, hatAccessToken, graphAccessToken, req, next) {
-    initialize(node, hatAccessToken, graphAccessToken);
+  publicObject.initialRun = function(node, hatAccessToken, icalUrl, req, next) {
+    initialize(node, hatAccessToken, icalUrl);
     async.waterfall([
       publicObject.fetchData,
       publicObject.postRecords
@@ -26,8 +27,8 @@ module.exports = (function() {
     });
   }
 
-  publicObject.updateRun = function(node, hatAccessToken, graphAccessToken, lastUpdated, done) {
-    initialize(node, hatAccessToken, graphAccessToken, lastUpdated);
+  publicObject.updateRun = function(node, hatAccessToken, icalUrl, lastUpdated, done) {
+    initialize(node, hatAccessToken, icalUrl, lastUpdated);
     async.waterfall([
       publicObject.fetchData,
       publicObject.postRecords
@@ -49,26 +50,37 @@ module.exports = (function() {
     });
   }
 
-  publicObject.postDataSourceModel = function(req, res, next) {
-    request({
+  publicObject.postDataSourceModel = function(node, hatAccessToken, req, res, next) {
+    initialize(node, hatAccessToken);
+    console.log({
       url: config.hatBaseUrl+'/data/table',
-      qs: { access_token: req.query.hat_token },
+      qs: { access_token: state.hatAccessToken },
       headers: config.hatHeaders,
       method: 'POST',
       json: true,
-      body: fbFieldsConfig[req.params.nodeName]
+      body: icalFieldsConfig[req.params.nodeName]
+    }
+      )
+    request({
+      url: config.hatBaseUrl+'/data/table',
+      qs: { access_token: state.hatAccessToken },
+      headers: config.hatHeaders,
+      method: 'POST',
+      json: true,
+      body: icalFieldsConfig[req.params.nodeName]
     }, function (err, response, body) {
-      if (err) return next(err);
-      res.send(req.params.nodeName + ' source model was successfully created.');
+      console.log("Post source model: ", err, response.statusCode, body);
+      if (response.statusCode === 200) res.send(req.params.nodeName + ' source model was successfully created.');
+      else return next(body);        
     });
   }
 
   publicObject.fetchData = function(callback) {
-    async.parallel([getGraphData, fetchHatInfo], function(err, results) {
+    async.parallel([getCalendarData, fetchHatInfo], function(err, results) {
       if (err) return callback(err);
       /* WARNING: executes asynchronously */
       results[0].forEach(function(node) {
-        var convertedNode = transformFbToHat(node, results[1], '');
+        var convertedNode = transformIcalToHat(node, results[1], '');
         state.data.push(convertedNode);
       });
 
@@ -78,9 +90,9 @@ module.exports = (function() {
 
   publicObject.postRecords = function(callb) {
     async.forEachOfSeries(state.data,
-      function(record, index, callback) {
+      function(dataRecordSet, index, callback) {
         async.waterfall([
-          async.apply(createNewRecord, state.node+index, record),
+          async.apply(createNewRecord, state.node+index, dataRecordSet),
           postRecordValues
         ], function (err) {
           if (err) return callback(err);
@@ -91,44 +103,37 @@ module.exports = (function() {
       });
   }
 
-  function initialize(node, hatAccessToken, graphAccessToken, lastUpdated) {
+  function initialize(node, hatAccessToken, icalUrl, lastUpdated) {
+    console.log("Initialize:", node, hatAccessToken, icalUrl, lastUpdated);
     state.node = node || '';
     state.hatAccessToken = hatAccessToken || '';
-    state.graphAccessToken = graphAccessToken || '';
+    state.icalUrl = icalUrl || '';
     state.lastUpdated = lastUpdated;
     state.data = [];
   };
 
-  function createNewRecord(recordName, record, callback) {
-    request({
-      url: config.hatBaseUrl+'/data/record',
-      qs: { access_token: state.hatAccessToken },
-      headers: config.headers,
-      method: 'POST',
-      json: true,
-      body: { name: recordName }
-    }, function (err, response, body) {
-      if (err) return callback(err);
-      console.log('Created new HAT record '+body.name);
-      return callback(null, body, record);
-    });
+  function createNewRecord(recordName, dataRecordSet, callback) {
+      console.log('Created new HAT record '+recordName);
+      var record = { name: recordName }
+      return callback(null, record, dataRecordSet);
   }
 
-  function postRecordValues(recordInfo, record, callback) {
-    request({
-      url: config.hatBaseUrl+'/data/record/'+recordInfo.id+'/values',
+  function postRecordValues(record, dataRecordSet, callback) {
+    var recordValues = {
+      record: record,
+      values: dataRecordSet
+    };
+    var dataRequest = {
+      url: config.hatBaseUrl+'/data/record/values',
       qs: { access_token: state.hatAccessToken },
-      headers: {
-        "User-Agent": "MyClient/1.0.0",
-        "Accept": "application/json",
-        "Host": "example.hatdex.org",
-        "Content-Type": "application/json"
-      },
+      headers: config.hatHeaders,
       method: 'POST',
-      body: JSON.stringify(record, hatJsonFormat)
-    }, function (err, response, body) {
+      body: JSON.stringify(recordValues)
+    };
+    console.log("Complete request:", dataRequest);
+    request(dataRequest, function (err, response, body) {
       if (err) return callback(err);
-      console.log('Updated values for '+recordInfo.name+' record');
+      console.log('Updated values for '+record.name+' record');
       console.log(body);
       callback(null);
     });
@@ -158,11 +163,11 @@ module.exports = (function() {
 
   function getDataSourceId(callback) {
     request({
-      url: config.hatBaseUrl+'/data/table/search',
+      url: config.hatBaseUrl+'/data/table',
       qs: {
         access_token: state.hatAccessToken,
         name: state.node,
-        source: 'facebook'
+        source: 'calendar'
       },
       headers: config.hatHeaders,
       method: 'GET',
@@ -171,7 +176,7 @@ module.exports = (function() {
       if (err) {
         return callback(err);
       } else if (response.statusCode === 404) {
-        var newError = new Error('HAT resource \"facebook '+state.node+'\" not found');
+        var newError = new Error('HAT resource \"calendar '+state.node+'\" not found');
         newError.status = response.statusCode;
         return callback(newError);
       }
@@ -194,7 +199,7 @@ module.exports = (function() {
       if (err) {
         return callback(err);
       } else if (response.statusCode === 404) {
-        var newError = new Error('HAT resource \"facebook '+state.node+'\" not found');
+        var newError = new Error('HAT resource \"calendar '+state.node+'\" not found');
         newError.status = response.statusCode;
         return callback(newError);
       }
@@ -203,24 +208,56 @@ module.exports = (function() {
     });
   }
 
-  function getGraphData(callback) {
+  function getCalendarData(callback) {
     request({
-      url: fbReqGen.getRequestUrl(state.node, state.graphAccessToken, state.last),
+      url: icalReqGen.getRequestUrl(state.icalUrl, state.lastUpdated),
       method: 'GET',
-      json: true
+      json: false
     }, function (err, response, body) {
       if (err) return callback(err);
 
-      console.log(body);
+      var calendarData = icalToCalendarJson(body, state.lastUpdated);
 
       state.lastUpdated = parseInt(Date.now() / 1000, 10).toString();
 
-      if (state.node === 'profile') {
-        return callback(null, [body]);
-      } else {
-        return callback(null, body.data);
-      }
+      console.log("New calendar data: ", calendarData);
+      
+      return callback(null, calendarData);
     });
+  }
+
+  function icalToCalendarJson(iCalendarData, lastUpdated) {
+    var jcalData = ICAL.parse(iCalendarData);
+    var vcalendar = new ICAL.Component(jcalData);
+    var vevents = vcalendar.getAllSubcomponents('vevent');
+
+    var calName = _.flatten(_.filter(vcalendar.jCal[1], function(d){
+      return d[0] === 'x-wr-calname';
+    }))[3];
+
+    var calendarEvents = _.map(vevents, function(vevent) {
+      var event = new ICAL.Event(vevent);
+      var data = {
+        "calendarName": calName,
+        "startDate": vevent.getFirstPropertyValue('dtstart').toString(),
+        "endDate": vevent.getFirstPropertyValue('dtend').toString(),
+        "lastUpdated": vevent.getFirstPropertyValue('last-modified').toString(),
+        "location": vevent.getFirstPropertyValue('location'),
+        "attendees": _.map(_.pluck(event.attendees, 'jCal'), function(cal){ 
+          var component = new ICAL.Component(cal); 
+          return component.jCal[1].cn; 
+        }),
+        "summary": vevent.getFirstPropertyValue('summary'),
+        "description": vevent.getFirstPropertyValue('description'),
+        "organizer": vevent.getFirstPropertyValue('organizer')
+      }
+      return data;
+    });
+
+    var updatedEvents = _.filter(calendarEvents, function(event) {
+      return event.lastUpdated < lastUpdated;
+    })
+    return calendarEvents;
   }
 
   function mapDataSourceModel(tree, prefix) {
@@ -240,25 +277,27 @@ module.exports = (function() {
     return hatIdMapping;
   }
 
-  function transformFbToHat(node, hatIdMapping, prefix) {
-    var convertedData = [];
-    /* WARNING: executes asynchronously */
-    Object.keys(node).forEach(function(key) {
-      if (typeof node[key] === 'object') {
-        var convertedSubNode = transformFbToHat(node[key], hatIdMapping, key);
-        convertedData = _.defaults(convertedData, convertedSubNode);
+  function transformIcalToHat(node, hatIdMapping, prefix) {
+    var convertedData = _.map(node, function(value, key) {
+      if (typeof value === 'object') {
+        return transformIcalToHat(value, hatIdMapping, key);
       } else {
-        var hatEntry = {
-          value: node[key],
+        var hatValue = {
+          value: value,
           field: {
             id: hatIdMapping[prefix+'_'+key],
             name: key
           }
         };
-        convertedData.push(hatEntry);
+        return hatValue;
       }
+    })
+
+    var flatValues = _.flattenDeep(convertedData);
+    var filtered = _.filter(flatValues, function(value){
+      return (value.field && value.field.id && _.isNumber(value.field.id));
     });
-    return convertedData;
+    return filtered;
   }
 
 

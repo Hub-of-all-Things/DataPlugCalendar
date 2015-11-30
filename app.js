@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 
 var errors = require('./errors');
 var routes = require('./routes/index');
-var facebook = require('./routes/facebook');
+var calendar = require('./routes/calendar');
 
 var app = express();
 
@@ -30,7 +30,7 @@ app.use(require('express-session')({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/facebook', facebook);
+app.use('/calendar', calendar);
 
 // mongoose
 if (process.env.MONGOLAB_URI) {
