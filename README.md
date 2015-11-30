@@ -1,6 +1,6 @@
 # HAT Sync Tools
 
-![HAT Calendar Synchronizer](https://www.dropbox.com/s/6z9oijy7dl1ddck/Screenshot%202015-11-30%2019.30.13.png?dl=0)
+![HAT Calendar Synchronizer](https://raw.githubusercontent.com/Hub-of-all-Things/DataPlugCalendar/master/images/screenshot.png)
 
 ### How to use it
 
@@ -28,7 +28,7 @@
 
 5. Data synchronisation is initialised by entering your ics calendar url into the form and submitting it. It depends on your calendar provider how you can obtain the URL. For example for Google calendar:
 
-![Google Calendar ICS address](https://www.dropbox.com/s/l3zyvuqd6ozuux6/Screenshot%202015-11-30%2019.35.51.png?dl=0)
+![Google Calendar ICS address](https://raw.githubusercontent.com/Hub-of-all-Things/DataPlugCalendar/master/images/calendar.png)
 
 Currently extracts a simple set of calendar event information, using [ical.js](https://github.com/mozilla-comm/ical.js) library:
 
