@@ -52,15 +52,6 @@ module.exports = (function() {
 
   publicObject.postDataSourceModel = function(node, hatAccessToken, req, res, next) {
     initialize(node, hatAccessToken);
-    console.log({
-      url: config.hatBaseUrl+'/data/table',
-      qs: { access_token: state.hatAccessToken },
-      headers: config.hatHeaders,
-      method: 'POST',
-      json: true,
-      body: icalFieldsConfig[req.params.nodeName]
-    }
-      )
     request({
       url: config.hatBaseUrl+'/data/table',
       qs: { access_token: state.hatAccessToken },
@@ -69,7 +60,6 @@ module.exports = (function() {
       json: true,
       body: icalFieldsConfig[req.params.nodeName]
     }, function (err, response, body) {
-      console.log("Post source model: ", err, response.statusCode, body);
       if (response.statusCode === 200) res.send(req.params.nodeName + ' source model was successfully created.');
       else return next(body);        
     });
@@ -104,11 +94,10 @@ module.exports = (function() {
   }
 
   function initialize(node, hatAccessToken, icalUrl, lastUpdated) {
-    console.log("Initialize:", node, hatAccessToken, icalUrl, lastUpdated);
     state.node = node || '';
     state.hatAccessToken = hatAccessToken || '';
     state.icalUrl = icalUrl || '';
-    state.lastUpdated = lastUpdated;
+    state.lastUpdated = lastUpdated || state.lastUpdated;
     state.data = [];
   };
 
@@ -130,11 +119,8 @@ module.exports = (function() {
       method: 'POST',
       body: JSON.stringify(recordValues)
     };
-    console.log("Complete request:", dataRequest);
     request(dataRequest, function (err, response, body) {
       if (err) return callback(err);
-      console.log('Updated values for '+record.name+' record');
-      console.log(body);
       callback(null);
     });
   }
@@ -217,12 +203,23 @@ module.exports = (function() {
       if (err) return callback(err);
 
       var calendarData = icalToCalendarJson(body, state.lastUpdated);
+      var lastUpdatedTimestamp = parseInt(state.lastUpdated);
 
-      state.lastUpdated = parseInt(Date.now() / 1000, 10).toString();
+      var newCalendarData = _.filter(calendarData, function(event) {
+        var isNew = true;
+        if (_.isUndefined(state.lastUpdated))
+          isNew = true;
+        else {
+          var d = new Date(event.lastUpdated);
+          var timestamp = d.getTime / 1000;
+          isNew = timestamp >= lastUpdatedTimestamp;
+        }
+        return isNew;
+      });
 
-      console.log("New calendar data: ", calendarData);
+      state.lastUpdated = Math.trunc(Date.now() / 1000).toString();
       
-      return callback(null, calendarData);
+      return callback(null, newCalendarData);
     });
   }
 
