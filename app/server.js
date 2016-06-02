@@ -12,6 +12,7 @@ const errors = require('./errors');
 const config = require('./config');
 
 const indexRoutes = require('./routes/index');
+const dataPlugRoutes = require('./routes/dataPlug');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/', indexRoutes);
+app.use('/dataplug', dataPlugRoutes);
 
 // mongoose
 
