@@ -1,0 +1,18 @@
+#Documentation on services http://kubernetes.io/v1.1/docs/user-guide/services.html
+#Details on exposing services http://kubernetes.io/v1.1/docs/user-guide/connecting-applications.html
+apiVersion: v1
+kind: Service
+metadata:
+  name: dataplug-service-ical
+  labels:
+    app: dataplug-ical
+spec:
+  selector:
+    app: dataplug-ical
+  ports:
+  - targetPort: 30081 #port on pod #nodePort: %port%
+    port: 30081
+    nodePort: 30081
+    protocol: TCP
+    name: http
+  type: NodePort #this makes the ports accessible on the node

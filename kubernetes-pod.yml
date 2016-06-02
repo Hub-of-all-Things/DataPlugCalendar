@@ -1,0 +1,38 @@
+#http://kubernetes.io/v1.1/docs/user-guide/connecting-applications.html
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dataplug-ical
+  labels:
+    app: dataplug-ical
+spec:
+  containers: 
+  - name: icalmongo #------------------------------------------------------------------------
+    image: mongo:latest
+    resources:
+      requests:
+        cpu: "20m"
+      limits:
+        cpu: "100m"
+    ports:
+    - containerPort: 27017 #mongo port
+  - name: ical-dataplug #------------------------------------------------------------------------
+    image: hubofallthings/ical-dataplug:latest
+    resources:
+      requests:
+        cpu: "20m"
+      limits:
+        cpu: "100m"
+    ports:
+    - containerPort: 30081 #not exposed in node nor are there any special NAT rules to route traffic to the pod
+    env:
+    - name: NODE_ENV
+      value: production
+    - name: PORT
+      value: "30081"
+    - name: HOST
+      value: ical.source.hubofallthings.net
+    - name: MONGODB_PORT
+      value: "27017"
+    - name: MONGODB_HOST
+      value: localhost
