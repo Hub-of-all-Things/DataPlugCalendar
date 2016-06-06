@@ -14,6 +14,8 @@ const config = require('./config');
 const indexRoutes = require('./routes/index');
 const dataPlugRoutes = require('./routes/dataPlug');
 
+const updateSvc = require('./services/update.service');
+
 let app = express();
 
 app.disable('etag');

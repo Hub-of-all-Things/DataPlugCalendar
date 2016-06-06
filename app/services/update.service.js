@@ -30,16 +30,18 @@ setInterval(() => {
   });
 }, config.updateService.dbCheckInterval);
 
-exports.addInitJob = (dataSource) => {
-  queue.unshift({ task: 'CREATE_MODEL', info: dataSource }, (err) => {
+exports.addInitJob = (calendar) => {
+  queue.unshift({ task: 'CREATE_MODEL', info: calendar }, (err) => {
     if (err) {
-        console.log('Error occured when creating model.');
-      } else {
-        console.log('Model has been successfully created.');
-      }
+      console.log('Error occured when creating model.');
+    } else {
+      console.log('Model has been successfully created.');
+    }
+
+    onQueueJobs.shift();
   });
 
-  onQueueJobs.unshift(dataSource._id);
+  onQueueJobs.unshift(calendar._id);
 };
 
 function work(item, cb) {
@@ -51,28 +53,23 @@ function work(item, cb) {
         return cb();
       }
 
-      hat.updateDataSource(item.info.dataSource, item.info, (err) => {
-        const currentTime = new Date();
-
+      hat.updateDataSource(item.info, (err) => {
         const isSuccess = err ? false : true;
 
-        const nextRunAt = err ? new Date(currentTime.getTime() + config.updateService.repeatInterval) : null;
-
-        db.updateDboxFolder(item.info, isSuccess, nextRunAt, (err) => {
+        db.updateCalendar(item.info, isSuccess, (err) => {
           cb();
         });
       });
     });
   } else if (item.task === 'CREATE_MODEL') {
-    hat.mapOrCreateModel(item.info, (err) => {
+    hat.mapOrCreateModel(item.info.dataSource, (err) => {
       const currentTime = new Date();
 
       const isSuccess = err ? false : true;
 
       const nextRunAt = new Date(currentTime.getTime() + config.updateService.repeatInterval);
 
-      db.updateDboxFolder(item.info, isSuccess, nextRunAt, (err) => {
-        onQueueJobs.shift();
+      db.updateCalendar(item.info, isSuccess, nextRunAt, (err) => {
         cb();
       });
     });

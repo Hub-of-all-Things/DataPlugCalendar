@@ -34,7 +34,7 @@ config.updateIntervals = {
 };
 
 config.updateService = {
-  dbCheckInterval: 10 * 60 * 1000,
+  dbCheckInterval: 2 * 60 * 1000,
   repeatInterval: 60 * 1000
 };
 

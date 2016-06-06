@@ -28,7 +28,7 @@ router.post('/hat', (req, res, next) => {
       if (err) return next();
 
       req.session.hatAccessToken = hatAccessToken;
-      console.log('hat acess token', req.session.hatAccessToken);
+
       req.session.save(function (err) {
         return res.redirect('/dataplug/config');
       });
@@ -64,7 +64,9 @@ router.post('/config', (req, res, next) => {
       db.createCalendar(calendarLink, savedEntries, (err, savedCalendar) => {
         if (err) return next();
 
-        update.addInitJob(savedEntries[0]);
+        savedCalendar[0].dataSource = savedEntries[0];
+
+        update.addInitJob(savedCalendar[0]);
         return res.render('confirmation');
       });
 

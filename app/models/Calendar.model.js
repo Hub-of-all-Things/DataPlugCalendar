@@ -7,7 +7,7 @@ const CalendarSchema = new Schema({
   dataSource:             { type: Schema.Types.ObjectId, ref: 'HatDataSource' },
   url:                    { type: String },
   repeatInterval:         { type: Number },
-  newestRecordTimestamp:  { type: String },
+  lastUpdated:            { type: String },
   createdAt:              { type: Date },
   lastModifiedAt:         { type: Date },
   lastRunAt:              { type: Date },

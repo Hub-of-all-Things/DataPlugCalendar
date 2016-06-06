@@ -20,6 +20,15 @@ exports.findDueJobs = (onQueueJobs, callback) => {
                    .exec(callback);
 };
 
+exports.lockJob = (jobId, callback) => {
+  const docUpdate = {
+    lastRunAt: new Date(),
+    lockedAt: new Date()
+  };
+
+  return Calendar.findByIdAndUpdate(jobId, docUpdate, { new: true }, callback);
+};
+
 exports.createDataSources = (names, source, hatUrl, hatAT, sourceAT, callback) => {
   if (typeof names === 'string') names = [names];
 
@@ -49,10 +58,11 @@ exports.createCalendar = (url, dataSources, callback) => {
       dataSource: dataSource._id,
       url: url,
       repeatInterval: config.updateIntervals[dataSource.name],
+      lastUpdated: '1',
       createdAt: currentTime,
       lastModifiedAt: currentTime,
       lastRunAt: null,
-      nextRunAt: new Date(currentTime.getTime() + 60 * 1000),
+      nextRunAt: null,
       lastSuccessAt: null,
       lastFailureAt: null,
       lockedAt: null
@@ -60,4 +70,40 @@ exports.createCalendar = (url, dataSources, callback) => {
   });
 
   return Calendar.create(newDbEntries, callback);
+};
+
+exports.updateDataSource = (docUpdate, dataSource, callback) => {
+  const dataSourceFindParams = {
+    hatHost: dataSource.hatHost,
+    name: dataSource.name,
+    source: dataSource.source
+  };
+
+  return HatDataSource.findOneAndUpdate(dataSourceFindParams, docUpdate, { new: true }, callback);
+};
+
+exports.updateCalendar = (calendar, isSuccess, nextRunAt, callback) => {
+  if (typeof callback === 'undefined') {
+    callback = nextRunAt;
+    nextRunAt = null;
+  }
+  console.log(calendar.lastUpdated);
+  const currentTime = new Date();
+
+  let docUpdate = {
+    lastUpdated: calendar.lastUpdated,
+    lockedAt: null
+  };
+
+  if (isSuccess) {
+    docUpdate.lastSuccessAt = currentTime;
+    docUpdate.nextRunAt = nextRunAt ? nextRunAt : new Date(currentTime.getTime() + calendar.repeatInterval);
+  } else {
+    docUpdate.lastFailureAt = currentTime;
+    docUpdate.nextRunAt = new Date(currentTime.getTime() + config.updateService.repeatInterval);
+  }
+
+  console.log('THE PARTY', docUpdate);
+
+  return Calendar.findByIdAndUpdate(calendar._id, docUpdate, { new: true }, callback);
 };

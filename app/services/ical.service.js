@@ -1,32 +1,30 @@
-'use strict';
-
 const request = require('request');
 const qs = require('qs');
 const ical = require('ical.js');
 const _ = require('lodash');
 
-let internals = {};
+var internals = {};
 
-exports.getCalendarData = (url, lastUpdated, callback) {
+exports.getCalendarData = (calendar, callback) => {
 
-  const reqOptions = { url: url, json: false };
+  const reqOptions = { url: calendar.url, json: false };
 
   request(reqOptions, (err, res, body) => {
     if (err) return callback(err);
 
-    const calendarData = internals.icalToJson(body, lastUpdated);
-    const lastUpdatedTimestamp = parseInt(lastUpdated);
+    const calendarData = internals.icalToJson(body, calendar.lastUpdated);
+    const lastUpdatedTimestamp = parseInt(calendar.lastUpdated);
 
     const newCalendarData = _.filter(calendarData, function(item) {
 
       const isNew = true;
 
-      if (_.isUndefined(lastUpdated)) {
+      if (_.isUndefined(calendar.lastUpdated)) {
         isNew = true;
       } else {
         const d = new Date(item.lastUpdated);
         const timestamp = d.getTime() / 1000;
-        isNew = timestamp >= lastUpdated;
+        isNew = timestamp >= calendar.lastUpdated;
       }
 
       return isNew;
@@ -34,9 +32,9 @@ exports.getCalendarData = (url, lastUpdated, callback) {
 
     console.log(newCalendarData);
 
-    const newLastUpdated = Math.trunc(Date.now() / 1000).toString();
+    calendar.lastUpdated = Math.trunc(Date.now() / 1000).toString();
 
-    return callback(null, newCalendarData, newLastUpdated);
+    return callback(null, newCalendarData);
   });
 };
 
