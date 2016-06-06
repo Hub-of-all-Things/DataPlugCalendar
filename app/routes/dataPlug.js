@@ -6,6 +6,7 @@ const router = express.Router();
 const db = require('../services/db.service');
 const hat = require('../services/hat.service');
 const market = require('../services/market.service');
+const update = require('../services/update.service');
 const errors = require('../errors');
 const config = require('../config');
 
@@ -58,12 +59,12 @@ router.post('/config', (req, res, next) => {
                        req.session.hatAccessToken,
                        null,
                        (err, savedEntries) => {
-                        console.log(err);
     if (err) return next();
 
-      db.createUpdateJobs(calendarLink, savedEntries, (err, savedJobs) => {
+      db.createCalendar(calendarLink, savedEntries, (err, savedCalendar) => {
         if (err) return next();
 
+        update.addInitJob(savedEntries[0]);
         return res.render('confirmation');
       });
 

@@ -33,6 +33,11 @@ config.updateIntervals = {
   events: 24 * 60 * 60 * 1000
 };
 
+config.updateService = {
+  dbCheckInterval: 10 * 60 * 1000,
+  repeatInterval: 60 * 1000
+};
+
 if (TEST) config.webServer.port = 5525;
 
 config.webServerURL = 'http://' + config.webServer.host + ':' + config.webServer.port;

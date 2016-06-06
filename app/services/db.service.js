@@ -13,6 +13,13 @@ exports.countDataSources = (hatUrl, callback) => {
   });
 };
 
+exports.findDueJobs = (onQueueJobs, callback) => {
+  return Calendar.find({ nextRunAt: { $lt: new Date() },
+                          _id: { $nin: onQueueJobs } })
+                   .populate('dataSource')
+                   .exec(callback);
+};
+
 exports.createDataSources = (names, source, hatUrl, hatAT, sourceAT, callback) => {
   if (typeof names === 'string') names = [names];
 
@@ -32,7 +39,7 @@ exports.createDataSources = (names, source, hatUrl, hatAT, sourceAT, callback) =
   return HatDataSource.create(newDbEntries, callback);
 };
 
-exports.createUpdateJobs = (url, dataSources, callback) => {
+exports.createCalendar = (url, dataSources, callback) => {
   if (!Array.isArray(dataSources)) dataSources = [dataSources];
 
   const currentTime = new Date();
