@@ -12,6 +12,7 @@
     "express": "~4.13.1",
     "express-session": "^1.12.1",
     "hat-node-sdk": "git+ssh://git@github.com/Hub-of-all-Things/hat-node-sdk.git",
+    "ical.js": "^1.2.1",
     "jade": "~1.11.0",
     "lodash": "^3.10.1",
     "mongoose": "^4.2.2",
