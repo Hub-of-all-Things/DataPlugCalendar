@@ -29,6 +29,10 @@ config.hat = {
   password: process.env.HAT_PASSWORD
 };
 
+config.updateIntervals = {
+  events: 24 * 60 * 60 * 1000
+};
+
 if (TEST) config.webServer.port = 5525;
 
 config.webServerURL = 'http://' + config.webServer.host + ':' + config.webServer.port;

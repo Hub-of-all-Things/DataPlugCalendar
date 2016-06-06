@@ -9,9 +9,7 @@ const HatDataSourceSchema = new Schema({
   sourceAccessToken:      String,
   dataSourceModel:        Schema.Types.Mixed,
   dataSourceModelId:      Number,
-  hatIdMapping:           Schema.Types.Mixed,
-  updateFrequency:        String,
-  newestRecordTimestamp:  String
+  hatIdMapping:           Schema.Types.Mixed
 });
 
 module.exports = mongoose.model('HatDataSource', HatDataSourceSchema);

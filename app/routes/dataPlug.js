@@ -18,26 +18,55 @@ router.post('/hat', (req, res, next) => {
 
   req.session.hatUrl = req.body['hat_url'];
 
-  market.connectHat(req.session.hatUrl, (err) => {
+  //market.connectHat(req.session.hatUrl, (err) => {
 
-    if (err) return next();
+    //if (err) return next();
 
     hat.getAccessToken(req.session.hatUrl, (err, hatAccessToken) => {
 
       if (err) return next();
 
       req.session.hatAccessToken = hatAccessToken;
-
-      db.countDataSources(req.session.hatUrl, (err, count) => {
-        if (err) return next();
-
-        if (count === 0) {
-          return res.render('calendarLinkForm');
-        } else {
-          return res.render('dataPlugStats');
-        }
+      console.log('hat acess token', req.session.hatAccessToken);
+      req.session.save(function (err) {
+        return res.redirect('/dataplug/config');
       });
     });
+  //});
+}, errors.renderErrorPage);
+
+router.get('/config', (req, res, next) => {
+  db.countDataSources(req.session.hatUrl, (err, count) => {
+    if (err) return next();
+
+    if (count === 0) {
+      return res.render('calendarLinkForm');
+    } else {
+      return res.render('dataPlugStats');
+    }
+  });
+});
+
+router.post('/config', (req, res, next) => {
+  const calendarLink = req.body['calendar-url'];
+
+  if (!calendarLink) return res.redirect('/dataplug/config');
+
+  db.createDataSources('events',
+                       'ical',
+                       req.session.hatUrl,
+                       req.session.hatAccessToken,
+                       null,
+                       (err, savedEntries) => {
+                        console.log(err);
+    if (err) return next();
+
+      db.createUpdateJobs(calendarLink, savedEntries, (err, savedJobs) => {
+        if (err) return next();
+
+        return res.render('confirmation');
+      });
+
   });
 }, errors.renderErrorPage);
 
