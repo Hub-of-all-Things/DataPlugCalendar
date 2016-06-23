@@ -56,7 +56,6 @@ router.post('/config', (req, res, next) => {
   db.createDataSources('events',
                        'ical',
                        req.session.hatUrl,
-                       req.session.hatAccessToken,
                        null,
                        (err, savedEntries) => {
     if (err) return next();
@@ -64,9 +63,7 @@ router.post('/config', (req, res, next) => {
       db.createCalendar(calendarLink, savedEntries, (err, savedCalendar) => {
         if (err) return next();
 
-        savedCalendar[0].dataSource = savedEntries[0];
-
-        update.addInitJob(savedCalendar[0]);
+        update.addInitJob(savedEntries[0], req.session.hatAccessToken);
         return res.render('confirmation');
       });
 

@@ -29,13 +29,12 @@ exports.lockJob = (jobId, callback) => {
   return Calendar.findByIdAndUpdate(jobId, docUpdate, { new: true }, callback);
 };
 
-exports.createDataSources = (names, source, hatUrl, hatAT, sourceAT, callback) => {
+exports.createDataSources = (names, source, hatUrl, sourceAT, callback) => {
   if (typeof names === 'string') names = [names];
 
   const newDbEntries = names.map((name) => {
     return {
       hatHost: hatUrl,
-      hatAccessToken: hatAT,
       name: name,
       source: source,
       sourceAccessToken: sourceAT,
@@ -62,7 +61,7 @@ exports.createCalendar = (url, dataSources, callback) => {
       createdAt: currentTime,
       lastModifiedAt: currentTime,
       lastRunAt: null,
-      nextRunAt: null,
+      nextRunAt: new Date(currentTime.getTime() + 2 * 60 * 1000),
       lastSuccessAt: null,
       lastFailureAt: null,
       lockedAt: null
@@ -87,8 +86,8 @@ exports.updateCalendar = (calendar, isSuccess, nextRunAt, callback) => {
     callback = nextRunAt;
     nextRunAt = null;
   }
-  console.log(calendar.lastUpdated);
-  const currentTime = new Date();
+
+  const now = new Date();
 
   let docUpdate = {
     lastUpdated: calendar.lastUpdated,
@@ -96,14 +95,12 @@ exports.updateCalendar = (calendar, isSuccess, nextRunAt, callback) => {
   };
 
   if (isSuccess) {
-    docUpdate.lastSuccessAt = currentTime;
-    docUpdate.nextRunAt = nextRunAt ? nextRunAt : new Date(currentTime.getTime() + calendar.repeatInterval);
+    docUpdate.lastSuccessAt = now;
+    docUpdate.nextRunAt = new Date(now.getTime() + calendar.repeatInterval);
   } else {
-    docUpdate.lastFailureAt = currentTime;
-    docUpdate.nextRunAt = new Date(currentTime.getTime() + config.updateService.repeatInterval);
+    docUpdate.lastFailureAt = now;
+    docUpdate.nextRunAt = new Date(now.getTime() + config.updateService.repeatInterval);
   }
-
-  console.log('THE PARTY', docUpdate);
 
   return Calendar.findByIdAndUpdate(calendar._id, docUpdate, { new: true }, callback);
 };

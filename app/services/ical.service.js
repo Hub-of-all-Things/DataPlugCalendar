@@ -30,8 +30,6 @@ exports.getCalendarData = (calendar, callback) => {
       return isNew;
     });
 
-    console.log(newCalendarData);
-
     calendar.lastUpdated = Math.trunc(Date.now() / 1000).toString();
 
     return callback(null, newCalendarData);

@@ -14,7 +14,6 @@ setInterval(() => {
   console.log('Checking DB for tasks... ');
 
   db.findDueJobs(onQueueJobs, (err, results) => {
-    console.log(results);
     const updateTasks = results.reduce((memo, result) => {
       if (result.dataSource.dataSourceModelId && result.dataSource.hatIdMapping) {
         memo.push({
@@ -30,8 +29,8 @@ setInterval(() => {
   });
 }, config.updateService.dbCheckInterval);
 
-exports.addInitJob = (calendar) => {
-  queue.unshift({ task: 'CREATE_MODEL', info: calendar }, (err) => {
+exports.addInitJob = (dataSource, hatAccessToken) => {
+  queue.unshift({ task: 'CREATE_MODEL', info: dataSource, accessToken: hatAccessToken }, (err) => {
     if (err) {
       console.log('Error occured when creating model.');
     } else {
@@ -41,7 +40,7 @@ exports.addInitJob = (calendar) => {
     onQueueJobs.shift();
   });
 
-  onQueueJobs.unshift(calendar._id);
+  onQueueJobs.unshift(dataSource._id);
 };
 
 function work(item, cb) {
@@ -54,7 +53,7 @@ function work(item, cb) {
       }
 
       hat.updateDataSource(item.info, (err) => {
-        const isSuccess = err ? false : true;
+        const isSuccess = !err;
 
         db.updateCalendar(item.info, isSuccess, (err) => {
           cb();
@@ -62,17 +61,13 @@ function work(item, cb) {
       });
     });
   } else if (item.task === 'CREATE_MODEL') {
-    hat.mapOrCreateModel(item.info.dataSource, (err) => {
-      const currentTime = new Date();
-
-      const isSuccess = err ? false : true;
-
-      const nextRunAt = new Date(currentTime.getTime() + config.updateService.repeatInterval);
-
-      db.updateCalendar(item.info, isSuccess, nextRunAt, (err) => {
-        cb();
-      });
+    hat.mapOrCreateModel(item.info, item.accessToken, (err) => {
+      cb();
     });
+  } else {
+    console.log('Task description could not be parsed.');
+    onQueueJobs.shift();
+    cb();
   }
 }
 
