@@ -38,28 +38,30 @@ exports.updateDataSource = (calendar, callback) => {
     return callback(new Error('Updated cancelled. Inconsistent database record'));
   }
 
-  const procedure = [
-    async.apply(ical.getCalendarData,
-                calendar),
-    async.apply(internals.asyncTranformObjToHat,
-                calendar.dataSource.hatIdMapping),
-    async.apply(internals.createHatRecords,
-                calendar.dataSource.hatHost,
-                calendar.dataSource.hatAccessToken)
-  ];
+  exports.getAccessToken(calendar.dataSource.hatHost, (err, hatAccessToken) => {
+    const procedure = [
+      async.apply(ical.getCalendarData,
+                  calendar),
+      async.apply(internals.asyncTranformObjToHat,
+                  calendar.dataSource.hatIdMapping),
+      async.apply(internals.createHatRecords,
+                  calendar.dataSource.hatHost,
+                  hatAccessToken)
+    ];
 
-  async.waterfall(procedure, (err, records) => {
-    if (err) {
-      console.log('There has been a problem updating ' + calendar.dataSource.hatHost + ' at ' + Date.now());
-      return callback(err);
-    } else {
-      return callback(null);
-    }
+    async.waterfall(procedure, (err, records) => {
+      if (err) {
+        console.log('There has been a problem updating ' + calendar.dataSource.hatHost + ' at ' + Date.now());
+        return callback(err);
+      } else {
+        return callback(null);
+      }
+    });
   });
 };
 
-exports.mapOrCreateModel = (dataSource, callback) => {
-  const client = new hat.Client('http://' + dataSource.hatHost, dataSource.hatAccessToken);
+exports.mapOrCreateModel = (dataSource, accessToken, callback) => {
+  const client = new hat.Client('http://' + dataSource.hatHost, accessToken);
 
   if (!dataSource.dataSourceModelId) {
     client.getDataSourceId(dataSource.name, dataSource.source, (err, model) => {
@@ -67,7 +69,7 @@ exports.mapOrCreateModel = (dataSource, callback) => {
         db.updateDataSource({ dataSourceModelId: model.id }, dataSource, (err, savedDataSource) => {
           if (err) return callback(err);
 
-          return exports.mapOrCreateModel(savedDataSource, callback);
+          return exports.mapOrCreateModel(savedDataSource, accessToken, callback);
         });
       } else {
         client.createDataSourceModel(dataSource.dataSourceModel, (err, createdModel) => {
@@ -76,19 +78,21 @@ exports.mapOrCreateModel = (dataSource, callback) => {
 
           db.updateDataSource({ dataSourceModelId: createdModel.id }, dataSource, (err, savedDataSource) => {
             if (err) return callback(err);
-            exports.mapOrCreateModel(savedDataSource, callback);
+            exports.mapOrCreateModel(savedDataSource, accessToken, callback);
           });
         });
       }
     });
   } else if (!dataSource.hatIdMapping) {
     client.getDataSourceModel(dataSource.dataSourceModelId, (err, model) => {
+      if (err) return callback(err);
+
       let hatIdMapping;
 
       try {
         hatIdMapping = hat.transform.mapDataSourceModelIds(model);
       } catch (e) {
-        return callback(err);
+        return callback(e);
       }
 
       db.updateDataSource({ hatIdMapping: hatIdMapping }, dataSource, callback);
