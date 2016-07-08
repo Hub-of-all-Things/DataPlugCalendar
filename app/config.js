@@ -19,7 +19,7 @@ config.mongodb = {
 };
 
 config.market = {
-  host: 'marketsquare.hubofallthings.net',
+  host: process.env.MARKET_DOMAIN,
   id: process.env.MARKET_ID,
   accessToken: process.env.MARKET_ACCESS_TOKEN
 };
@@ -28,6 +28,8 @@ config.hat = {
   username: process.env.HAT_USER,
   password: process.env.HAT_PASSWORD
 };
+
+config.protocol = process.env.SECURE === 'true' ? 'https' : 'http';
 
 config.updateIntervals = {
   events: 24 * 60 * 60 * 1000
@@ -40,12 +42,14 @@ config.updateService = {
 
 if (TEST) config.webServer.port = 5525;
 
-config.webServerURL = 'https://' + config.webServer.host + ':' + config.webServer.port;
+config.webServerURL = config.protocol + '://' + config.webServer.host + ':' + config.webServer.port;
+
+if (!PRODUCTION) config.webServerURL += ':' + config.webServer.port;
 
 config.dbURL = 'mongodb://' + config.mongodb.host + ':' + config.mongodb.port +
 '/' + config.mongodb.db + '_' + config.currentEnv;
 
-config.market.url = 'https://' + config.market.host + '/api/dataplugs/' + config.market.id +
+config.market.url = config.protocol + '://' + config.market.host + '/api/dataplugs/' + config.market.id +
 '/connect';
 
 module.exports = config;

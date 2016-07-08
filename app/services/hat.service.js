@@ -14,7 +14,7 @@ let internals = {};
 
 exports.getAccessToken = (hatHost, callback) => {
   const reqOptions = {
-    url: 'https://' + hatHost + '/users/access_token',
+    url: config.protocol + '://' + hatHost + '/users/access_token',
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json"
@@ -61,7 +61,7 @@ exports.updateDataSource = (calendar, callback) => {
 };
 
 exports.mapOrCreateModel = (dataSource, accessToken, callback) => {
-  const client = new hat.Client('https://' + dataSource.hatHost, accessToken);
+  const client = new hat.Client(config.protocol + '://' + dataSource.hatHost, accessToken);
 
   if (!dataSource.dataSourceModelId) {
     client.getDataSourceId(dataSource.name, dataSource.source, (err, model) => {
@@ -112,6 +112,6 @@ internals.asyncTranformObjToHat = (hatIdMapping, data, callback) => {
 };
 
 internals.createHatRecords = (hatHost, hatAccessToken, records, callback) => {
-  var client = new hat.Client('https://' + hatHost, hatAccessToken);
+  var client = new hat.Client(config.protocol + '://' + hatHost, hatAccessToken);
   client.createMultipleRecords(records, callback);
 };
