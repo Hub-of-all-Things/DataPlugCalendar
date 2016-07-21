@@ -63,7 +63,7 @@ router.post('/config', (req, res, next) => {
       db.createCalendar(calendarLink, savedEntries, (err, savedCalendar) => {
         if (err) return next();
 
-        update.addInitJob(savedEntries[0], req.session.hatAccessToken);
+        update.addInitJob(savedEntries[0]);
         return res.render('confirmation');
       });
 
