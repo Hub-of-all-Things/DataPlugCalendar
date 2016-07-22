@@ -12,8 +12,14 @@ exports.getCalendarData = (calendar, callback) => {
   request(reqOptions, (err, res, body) => {
     if (err) return callback(err);
 
-    const calendarData = internals.icalToJson(body, calendar.lastUpdated);
-    const lastUpdatedTimestamp = parseInt(calendar.lastUpdated);
+    try {
+      const calendarData = internals.icalToJson(body, calendar.lastUpdated);
+      const lastUpdatedTimestamp = parseInt(calendar.lastUpdated);
+    } catch (e) {
+      e.calendarUrl = calendar.url;
+      return callback(e);
+    }
+
 
     const newCalendarData = _.filter(calendarData, function(item) {
 
