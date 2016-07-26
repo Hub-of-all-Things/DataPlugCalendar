@@ -1,14 +1,12 @@
 extends layout
 
 block content
-  .wrapper
-    .container
-      h1 Synchronise Calendar
-      p.plug-info Provide a link to the calendar to synchronise with.
+  h2 Synchronise Calendar
+  p.plug-info Provide a link to the calendar to synchronise with.
 
-      div.form
-        form(name="pull-calendar", method="post", action="/dataplug/config")
-          <!-- span.label Calendar URL Address -->
-          input(type="text", name="calendar-url", placeholder="Calendar URL Address")
-          div.actions
-            input.plug-button(type="submit", value="Link Calendar")
+  .container
+    form(name="pull-calendar", method="post", action="/dataplug/config")
+      <!-- span.label Calendar URL Address -->
+      input(type="text", name="calendar-url", placeholder="Calendar URL Address")
+      div.actions
+        input.plug-button(type="submit", value="Link Calendar")
