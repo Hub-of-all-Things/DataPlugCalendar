@@ -6,8 +6,8 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const session = require('express-session');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 
+const mongoose = require('./config/db');
 const errors = require('./errors');
 const config = require('./config');
 
@@ -41,7 +41,7 @@ app.use('/dataplug', dataPlugRoutes);
 
 // mongoose
 
-mongoose.connect(config.dbURL);
+var db = mongoose();
 
 // catch 404 and forward to error handler
 app.use(errors.notFound);
