@@ -1,38 +1,27 @@
 ![Hub of All things](http://hubofallthings.com/wp-content/uploads/banner21.png)
 
-# HAT Sync Tools
+# Calendar Data Plug for HAT
 
 ![HAT Calendar Synchronizer](https://Hub-of-all-Things.github.io/DataPlugCalendar/screenshot.png)
 
-### How to use it
+## Main features
 
-1. Install npm modules, make sure MongoDB is running and start node server from project root directory.
+- Minimalistic user interface with step-by-step setup process
+- Integration with MarketSquare's authorisation processes
+- Data synchronisation scheduler
+- Build using Node (v4 LTS), MongoDB and Express framework
 
-  ```bash
-  npm install
-  mongod
-  node bin/www
-  ```
+## Default settings
 
-2. Visit homepage passing in HAT access token as query parameter.
+Currently the data plug supports synchronisation of the following data sources with given default intervals:
 
-  ```
-  http://localhost:3000?hat\_token=$HAT\_ACCESS_TOKEN
-  ```
+- cloud-hosted iCal files (synced every 24 hours)
 
-3. Click "Authorize with Facebook" to grant access rights and generate user access token.
+Support for other data types and features will be added in the near future.
 
-4. Initialize Data Source Model for a particular node by visiting:
+### Data fields
 
-  ```
-  http://localhost:3000/calendar/$NODE\_NAME/init?hat\_token=$HAT\_ACCESS_TOKEN
-  ```
-
-5. Data synchronisation is initialised by entering your ics calendar url into the form and submitting it. It depends on your calendar provider how you can obtain the URL. For example for Google calendar:
-
-![Google Calendar ICS address](https://Hub-of-all-Things.github.io/DataPlugCalendar/calendar.png)
-
-Currently extracts a simple set of calendar event information, using [ical.js](https://github.com/mozilla-comm/ical.js) library:
+Extracts a simple set of calendar event information, using [ical.js](https://github.com/mozilla-comm/ical.js) library:
 
 - calendarName
 - startDate
@@ -44,6 +33,47 @@ Currently extracts a simple set of calendar event information, using [ical.js](h
 - description
 - organizer
 
+## Getting started
+
+### Setting up environment variables
+
+Data plug uses environment variables to configure security-sensitive parameters. Please have the following variables set up before starting the node process.
+
+- MARKET_ID - plug's unique ID to login with MarketSquare (obtained from MS)
+- MARKET\_ACCESS\_TOKEN - access token associated with the given MARKET_ID
+- MARKET_DOMAIN - domain name used by the MarketSquare (currently marketsquare.hubofallthings.net)
+- HAT_USER - username to login with HATs (configured *via* MarketSquare)
+- HAT_PASSWORD - password associated with the current HAT username (configured *via* MarketSquare)
+- NODE_ENV - can be set to either 'production' or 'development'
+- SECURE - if set to 'true' will switch to https protocol for all communications
+- HOST - webserver's domain name, defaults to 'localhost' if not set
+- PORT - webserver's port, defaults to 3000 if not set
+- MONGODB_HOST - Mongo database's domain name, defaults to 'localhost' if not set
+- MONGODB_PORT - Monog database's port, defaults to 27017 if not set
+
+### Configuration files
+
+Amendments to the default synchronisation scheduler, data types and data fields being synchronised can be made in the app/config.js file and app/config/ folder.
+
+### Starting the server
+
+Clone the repository, install required npm modules and start the node server from the project root directory. Make sure that MongoDB instance is running and environment variables are set up correctly.
+
+  ```bash
+  git clone https://github.com/Hub-of-all-Things/DataPlugFacebook
+  cd DataPlugFacebook/
+  npm install
+  node bin/www
+  ```
+
+Now the homepage can be accessed at http://localhost:3000 (assuming the default setup).
+
+## Getting cloud-hosted iCal files
+
+Data synchronisation is initialised by entering your ics calendar url into the form and submitting it. It depends on your calendar provider how the URL can be obtained. For example for Google calendar:
+
+![Google Calendar ICS address](https://Hub-of-all-Things.github.io/DataPlugCalendar/calendar.png)
+
 ## License
 
-This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License. To view a copy of this license, visit [http://creativecommons.org/licenses/by-nc-nd/4.0/](http://creativecommons.org/licenses/by-nc-nd/4.0/) or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+This work is licensed under the GNU Affero General Public License. Please read the LICENSE file for further details.
