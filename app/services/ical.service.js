@@ -1,3 +1,5 @@
+'use strict';
+
 const request = require('request');
 const qs = require('qs');
 const ical = require('ical.js');
@@ -10,39 +12,32 @@ exports.getCalendarData = (calendar, callback) => {
   const reqOptions = { url: calendar.url, json: false };
 
   request(reqOptions, (err, res, body) => {
-    if (err) return callback(err);
+    if (err) {
+      console.log(`[ERROR] Could not retrieve iCal file`);
+      return callback(err);
+    }
+
+    let newCalendarData;
 
     try {
-      const calendarData = internals.icalToJson(body, calendar.lastUpdated);
+      const calendarData = internals.icalToJson(body);
       const lastUpdatedTimestamp = parseInt(calendar.lastUpdated);
+      newCalendarData = internals.filterNewEvents(calendarData, lastUpdatedTimestamp);
     } catch (e) {
       e.calendarUrl = calendar.url;
       return callback(e);
     }
 
-
-    const newCalendarData = _.filter(calendarData, function(item) {
-
-      const isNew = true;
-
-      if (_.isUndefined(calendar.lastUpdated)) {
-        isNew = true;
-      } else {
-        const d = new Date(item.lastUpdated);
-        const timestamp = d.getTime() / 1000;
-        isNew = timestamp >= calendar.lastUpdated;
-      }
-
-      return isNew;
-    });
-
-    calendar.lastUpdated = Math.trunc(Date.now() / 1000).toString();
+    if (newCalendarData.length < 1) {
+      console.log('[iCal] No data to process.')
+      return callback(new Error('Nothing to update'));
+    }
 
     return callback(null, newCalendarData);
   });
 };
 
-internals.icalToJson = (iCalData, lastUpdated) => {
+internals.icalToJson = (iCalData) => {
   const jcalData = ical.parse(iCalData);
   const vcalendar = new ical.Component(jcalData);
   const vevents = vcalendar.getAllSubcomponents('vevent');
@@ -71,12 +66,25 @@ internals.icalToJson = (iCalData, lastUpdated) => {
     }
 
     return data;
-
-  });
-
-  const updatedEvents = _.filter(calendarEvents, (event) => {
-    return calendarEvents.lastUpdated < lastUpdated;
   });
 
   return calendarEvents;
 };
+
+internals.filterNewEvents = (calendarData, lastUpdated) => {
+ const newCalendarData = _.filter(calendarData, function(item) {
+    let isNew = true;
+
+    if (_.isUndefined(lastUpdated)) {
+      isNew = true;
+    } else {
+      const d = new Date(item.lastUpdated);
+      const timestamp = d.getTime() / 1000;
+      isNew = timestamp >= lastUpdated;
+    }
+
+    return isNew;
+  });
+
+  return newCalendarData;
+}

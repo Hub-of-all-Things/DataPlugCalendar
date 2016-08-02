@@ -28,6 +28,7 @@ exports.getAccessToken = (hatHost, callback) => {
 
   request.get(reqOptions, (err, res, body) => {
     if (err) return callback(err);
+    if (res.statusCode === 401 || res.statusCode === 500) return callback(body);
 
     return callback(null, body.accessToken);
   });
@@ -49,12 +50,18 @@ exports.updateDataSource = (calendar, callback) => {
                   hatAccessToken)
     ];
 
+    var now = Math.trunc(Date.now() / 1000).toString();
+
     async.waterfall(procedure, (err, records) => {
-      if (err) {
-        console.log('There has been a problem updating ' + calendar.dataSource.hatHost + ' at ' + Date.now());
+      if (err && err.message === 'Nothing to update') {
+        console.log(`[HAT service] Nothing to do.`);
+        return callback(null, now);
+      } else if (err) {
+        console.log(`[HAT Service] There has been a problem updating ${calendar.dataSource.hatHost} at ${new Date()}`);
         return callback(err);
       } else {
-        return callback(null);
+        console.log(`[HAT service] Successfully added ${records.length ? records.length : JSON.stringify(records)} records to HAT.`);
+        return callback(null, now);
       }
     });
   });
