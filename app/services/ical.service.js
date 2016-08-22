@@ -51,18 +51,18 @@ internals.icalToJson = (iCalData) => {
     const calendarEvent = new ical.Event(vevent);
 
     const data = {
-      "calendarName": calName,
-      "startDate": vevent.getFirstPropertyValue('dtstart').toString(),
-      "endDate": vevent.getFirstPropertyValue('dtend').toString(),
-      "lastUpdated": vevent.getFirstPropertyValue('last-modified').toString(),
-      "location": vevent.getFirstPropertyValue('location'),
-      "attendees": _.map(_.pluck(calendarEvent.attendees, 'jCal'), function(cal){
+      "calendarName": calName ? calName : '',
+      "startDate": vevent.getFirstPropertyValue('dtstart') ? vevent.getFirstPropertyValue('dtstart').toString() : '',
+      "endDate": vevent.getFirstPropertyValue('dtend') ? vevent.getFirstPropertyValue('dtend').toString() : '',
+      "lastUpdated": vevent.getFirstPropertyValue('last-modified') ? vevent.getFirstPropertyValue('last-modified').toString() : '',
+      "location": vevent.getFirstPropertyValue('location') ? vevent.getFirstPropertyValue('location') : '',
+      "attendees": calendarEvent.attendees ? _.map(_.map(calendarEvent.attendees, 'jCal'), function(cal){ // pluck
         var component = new ical.Component(cal);
         return component.jCal[1].cn;
-      }),
-      "summary": vevent.getFirstPropertyValue('summary'),
-      "description": vevent.getFirstPropertyValue('description'),
-      "organizer": vevent.getFirstPropertyValue('organizer')
+      }).toString() : '',
+      "summary": vevent.getFirstPropertyValue('summary') ? vevent.getFirstPropertyValue('summary') : '',
+      "description": vevent.getFirstPropertyValue('description') ? vevent.getFirstPropertyValue('description') : '',
+      "organizer": vevent.getFirstPropertyValue('organizer') ? vevent.getFirstPropertyValue('organizer') : ''
     }
 
     return data;
