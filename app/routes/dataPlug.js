@@ -10,14 +10,23 @@ const update = require('../services/update.service');
 const errors = require('../errors');
 const config = require('../config');
 
+const accountStats = require('../views/accountStats.marko');
+const hatRegisterMarko = require('../views/hatRegisterForm.marko');
+const calendarRegisterForm = require('../views/calendarRegisterForm.marko');
+const confirmationMarko = require('../views/setupConfirmation.marko');
+
 router.get('/', (req, res, next) => {
-  return res.render('dataPlugLanding', { hatHost: req.query.hat });
+  return res.marko(hatRegisterMarko, {
+    hatDomainInput: req.query.hat || null
+  });
 });
 
 router.post('/hat', (req, res, next) => {
-  if (!req.body['hat_url']) return res.render('dataPlugLanding', { hatHost: req.query.hat });
+  if (!req.body['hatDomain']) return res.marko(hatRegisterMarko, {
+    hatDomainInput: null
+  });
 
-  req.session.hatUrl = req.body['hat_url'];
+  req.session.hatUrl = req.body['hatDomain'];
 
   market.connectHat(req.session.hatUrl, (err) => {
     if (err) {
@@ -50,19 +59,20 @@ router.get('/config', (req, res, next) => {
       return next();
     }
 
-
     if (count === 0) {
-      return res.render('calendarLinkForm');
+      return res.marko(calendarRegisterForm);
     } else {
-      return res.render('dataPlugStats');
+      return res.marko(accountStats);
     }
   });
 }, errors.renderErrorPage);
 
 router.post('/config', (req, res, next) => {
-  if (!req.body['calendar-url']) return res.render('calendarLinkForm');
+  if (!req.body['calendarUrl']) {
+    return res.marko(calendarRegisterForm);
+  }
 
-  const calendarLink = req.body['calendar-url'];
+  const calendarLink = req.body['calendarUrl'];
 
   db.createDataSources('events',
                        'ical',
@@ -83,7 +93,9 @@ router.post('/config', (req, res, next) => {
         }
 
         update.addInitJob(savedEntries[0]);
-        return res.render('confirmation');
+        return res.marko(confirmationMarko, {
+          rumpelLink: 'https://rumpel.hubofallthings.com/'
+        });
       });
 
   });

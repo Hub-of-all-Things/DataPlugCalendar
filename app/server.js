@@ -6,6 +6,8 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+require('marko/express');
+require('marko/node-require').install();
 
 const mongoose = require('./config/db');
 const errors = require('./errors');
@@ -19,10 +21,6 @@ const updateSvc = require('./services/update.service');
 let app = express();
 
 app.disable('etag');
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));

@@ -3,8 +3,10 @@
 const express = require('express');
 const router = express.Router();
 
+const indexTemp = require('../views/index.marko');
+
 router.get('/', (req, res, next) => {
-  res.render('index');
+  res.marko(indexTemp);
 });
 
 module.exports = router;
