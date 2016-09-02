@@ -61,7 +61,7 @@ internals.icalToJson = (iCalData) => {
       "attendees": calendarEvent.attendees ? _.map(_.map(calendarEvent.attendees, 'jCal'), function(cal){ // pluck
         var component = new ical.Component(cal);
         return component.jCal[1].cn;
-      }).toString() : '[]',
+      }).toString() : '',
       "summary": vevent.getFirstPropertyValue('summary') ? vevent.getFirstPropertyValue('summary') : '',
       "description": vevent.getFirstPropertyValue('description') ? vevent.getFirstPropertyValue('description') : '',
       "organizer": vevent.getFirstPropertyValue('organizer') ? vevent.getFirstPropertyValue('organizer') : ''
