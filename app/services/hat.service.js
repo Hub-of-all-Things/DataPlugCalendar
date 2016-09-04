@@ -4,6 +4,7 @@ const hat = require('hat-node-sdk');
 const request = require('request');
 const qs = require('qs');
 const async = require('async');
+const jwt = require('jsonwebtoken');
 
 const db = require('../services/db.service');
 const ical = require('../services/ical.service');
@@ -12,9 +13,32 @@ const config = require('../config');
 
 let internals = {};
 
-exports.getAccessToken = (hatHost, callback) => {
+exports.verifyToken = (token, callback) => {
+  const decodedToken = jwt.decode(token);
+
+  if (!decodedToken) return callback(new Error('Invalid JWT token.'));
+
+  const reqUrl = config.protocol + '://' + decodedToken.iss + '/publickey';
+
+  request.get(reqUrl, (err, res, publicKey) => {
+    if (err) return callback (err);
+
+    jwt.verify(token, publicKey, (err, decoded) => {
+      if (err) return callback(err);
+
+      let hatSession = {
+        domain: decoded.iss,
+        authenticated: true
+      }
+
+      return callback(null, hatSession);
+    });
+  });
+};
+
+exports.getAccessToken = (hatDomain, callback) => {
   const reqOptions = {
-    url: config.protocol + '://' + hatHost + '/users/access_token',
+    url: config.protocol + '://' + hatDomain + '/users/access_token',
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json"

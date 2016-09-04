@@ -17,6 +17,7 @@
     "express-session": "^1.12.1",
     "hat-node-sdk": "https://github.com/Hub-of-all-Things/hat-node-sdk.git",
     "ical.js": "^1.2.1",
+    "jsonwebtoken": "^7.1.9",
     "lodash": "^4.15.0",
     "marko": "^3.9.4",
     "mongoose": "^4.2.2",

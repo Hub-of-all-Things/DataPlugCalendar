@@ -13,9 +13,6 @@ const mongoose = require('./config/db');
 const errors = require('./errors');
 const config = require('./config');
 
-const indexRoutes = require('./routes/index');
-const dataPlugRoutes = require('./routes/dataPlug');
-
 const updateSvc = require('./services/update.service');
 
 let app = express();
@@ -34,7 +31,13 @@ app.use(session({
 }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+/* App routes */
+const indexRoutes = require('./routes/index');
+const hatRoutes = require('./routes/hat');
+const dataPlugRoutes = require('./routes/dataPlug');
+
 app.use('/', indexRoutes);
+app.use('/hat', hatRoutes);
 app.use('/dataplug', dataPlugRoutes);
 
 // mongoose

@@ -8,18 +8,14 @@ const hat = require('../services/hat.service');
 const market = require('../services/market.service');
 const update = require('../services/update.service');
 const errors = require('../errors');
+const helpers = require('../helpers');
 const config = require('../config');
 
 const accountStats = require('../views/accountStats.marko');
-const hatRegisterMarko = require('../views/hatRegisterForm.marko');
 const calendarRegisterForm = require('../views/calendarRegisterForm.marko');
 const confirmationMarko = require('../views/setupConfirmation.marko');
 
-router.get('/', (req, res, next) => {
-  return res.marko(hatRegisterMarko, {
-    hatDomainInput: req.query.hat || null
-  });
-});
+router.use(helpers.authMiddleware);
 
 router.post('/hat', (req, res, next) => {
   if (!req.body['hatDomain']) return res.marko(hatRegisterMarko, {
