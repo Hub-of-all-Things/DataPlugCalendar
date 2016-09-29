@@ -16,22 +16,21 @@ let internals = {};
 exports.verifyToken = (token, callback) => {
   const decodedToken = jwt.decode(token);
 
-  if (!decodedToken) return callback(new Error('Invalid JWT token.'));
+  if (!decodedToken) {
+    return callback(new Error('Invalid JWT token.'));
+  } else if (!decodedToken.iss) {
+    return callback(new Error('JWT token does not contain valid "iss" field.'));
+  }
 
-  const reqUrl = config.protocol + '://' + decodedToken.iss + '/publickey';
+  const reqUrl = `${config.protocol}://${decodedToken.iss}/publickey`;
 
   request.get(reqUrl, (err, res, publicKey) => {
     if (err) return callback (err);
 
-    jwt.verify(token, publicKey, (err, decoded) => {
-      if (err) return callback(err);
+    jwt.verify(token, publicKey, { algorithms: ['RS256'], ignoreExpiration: false }, (err, payload) => {
+      if (err) return callback(null, false);
 
-      let hatSession = {
-        domain: decoded.iss,
-        authenticated: true
-      }
-
-      return callback(null, hatSession);
+      return callback(null, true, payload.iss);
     });
   });
 };

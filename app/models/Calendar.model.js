@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 
 const CalendarSchema = new Schema({
   dataSource:             { type: Schema.Types.ObjectId, ref: 'HatDataSource' },
+  name:                   { type: String },
   url:                    { type: String },
   repeatInterval:         { type: Number },
   lastUpdated:            { type: String },

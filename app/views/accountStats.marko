@@ -1,7 +1,29 @@
-<layout-use("./layout.marko")>
+<layout-use("./layout.marko") authenticated=data.hat.authenticated hatDomain=data.hat.domain>
   <layout-put into="container">
-    <h2>Plug already set up</h2>
+    <h3 if(data.dataStats.length > 0)>Plug is currently set up</h3>
+    <h3 if(data.dataStats.length === 0)>There is currently no Calendars setup</h3>
 
-    <p class="plug-info">The data plug for the specified HAT has already been setup. Please, try again later.</p>
+    <ul>
+      <li for(calendar in data.dataStats) class="data-group">
+        <!--<h4>${calendar.folderName}</h4>-->
+        <div class="body">
+          <div class="row">
+            <div class="col-xs-4">Link Provided:</div><div class="col-xs-8">${calendar.url}</div>
+            <div class="col-xs-4">Date Created:</div><div class="col-xs-8">${calendar.createdAt}</div>
+            <div class="col-xs-4">Last Successful Attempt:</div><div class="col-xs-8">${calendar.lastSuccessAt || 'not set yet'}</div>
+            <div class="col-xs-4">Last Failed Attempt:</div><div class="col-xs-8">${calendar.lastFailureAt || 'not set yet'}</div>
+            <div class="col-xs-4">Synchronisation Interval:</div><div class="col-xs-8">every ${calendar.repeatInterval / 1000 / 60 / 60} hours</div>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="container">
+      <a href="/calendar" class="plug-button">Add Calendar</a>
+    </div>
+
+    <!--<div class="container">
+      <a href="/dataplug/revoke" class="plug-button">Disconnect the Plug from Calendars</a>
+    </div>-->
   </layout-put>
 </layout-use>

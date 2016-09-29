@@ -1,10 +1,10 @@
-<layout-use("./layout.marko")>
+<layout-use("./layout.marko") authenticated=data.hat.authenticated hatDomain=data.hat.domain>
   <layout-put into="container">
     <h2>Choose Calendar for Synchronisation</h2>
 
     <p class="plug-info">Provide a link to the calendar to synchronise with.</p>
 
-    <form class="container calendar-link" name="calendarLink" method="post" action="/dataplug/config">
+    <form class="container calendar-link" name="calendarLink" method="post" action="/calendar">
 
       <div class="form-group">
         <label for="calendar-url">Calendar Address</label>

@@ -4,14 +4,24 @@ const express = require('express');
 const router = express.Router();
 
 const hat = require('../services/hat.service');
-const db = require('../services/db.service');
+
 const config = require('../config');
 
 const hatLoginForm = require('../views/hatLoginForm.marko');
 
 router.get('/login', (req, res, next) => {
   // TODO: check HAT domain with regex
-  return res.marko(hatLoginForm, { hatDomain: req.query['hat'] || null });
+  return res.marko(hatLoginForm, {
+    hat: req.session.hat,
+    hatDomain: req.query['hat'] || null });
+});
+
+router.get('/logout', (req, res, next) => {
+  req.session.hat = { authenticated: false, domain: '', url: '' }
+
+  return req.session.save(function(err) {
+    return res.redirect('/');
+  });
 });
 
 router.get('/authenticate', (req, res, next) => {
@@ -21,14 +31,18 @@ router.get('/authenticate', (req, res, next) => {
 
   const jwtToken = req.query['token'];
 
-  hat.verifyToken(jwtToken, (err, hatSessionInfo) => {
-    if (err || hatSessionInfo.authenticated === false) {
+  hat.verifyToken(jwtToken, (err, authenticated, hatDomain) => {
+    if (err || authenticated === false) {
       return res.send('Token could not be validated.');
     } else {
-      req.session.hat = hatSessionInfo;
+      req.session.hat = {
+        domain: hatDomain,
+        url: `${config.protocol}://${hatDomain}`,
+        authenticated: authenticated
+      };
 
       return req.session.save(function (err) {
-        return res.redirect('/dataPlug/config');
+        return res.redirect('/dataPlug/main');
       });
     }
   });

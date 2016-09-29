@@ -12,6 +12,7 @@ require('marko/node-require').install();
 const mongoose = require('./config/db');
 const errors = require('./errors');
 const config = require('./config');
+const helpers = require('./helpers');
 
 const updateSvc = require('./services/update.service');
 
@@ -30,14 +31,17 @@ app.use(session({
   saveUninitialized: true
 }));
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(helpers.createSessionData);
 
 /* App routes */
 const indexRoutes = require('./routes/index');
+const calendarRoutes = require('./routes/calendar');
 const hatRoutes = require('./routes/hat');
 const dataPlugRoutes = require('./routes/dataPlug');
 
 app.use('/', indexRoutes);
 app.use('/hat', hatRoutes);
+app.use('/calendar', calendarRoutes);
 app.use('/dataplug', dataPlugRoutes);
 
 // mongoose

@@ -29,22 +29,43 @@ exports.lockJob = (jobId, callback) => {
   return Calendar.findByIdAndUpdate(jobId, docUpdate, { new: true }, callback);
 };
 
-exports.createDataSources = (names, source, hatUrl, sourceAT, callback) => {
+exports.getCalendarsByDomain = (domain, callback) => {
+  return HatDataSource.find({ hatHost: domain }, (err, dataSources) => {
+    if (err) return callback(err);
+    if (dataSources.length === 0) {
+      return callback(null, dataSources);
+    }
+
+    return Calendar.find({ 'dataSource': dataSources[0]._id })
+      .populate('dataSource')
+      .exec(callback);
+  });
+};
+
+exports.createDataSources = (names, source, domain, sourceAT, callback) => {
   if (typeof names === 'string') names = [names];
 
-  const newDbEntries = names.map((name) => {
-    return {
-      hatHost: hatUrl,
-      name: name,
-      source: source,
-      sourceAccessToken: sourceAT,
-      dataSourceModel: calendarHatModels[name],
-      dataSourceModelId: null,
-      hatIdMapping: null
-    };
-  });
+  HatDataSource.find({ hatHost: domain }, (err, dataSources) => {
+    if (err) return callback(err);
 
-  return HatDataSource.create(newDbEntries, callback);
+    if (dataSources.length > 0) {
+      return callback(null, dataSources);
+    }
+
+    const newDbEntries = names.map((name) => {
+      return {
+        hatHost: domain,
+        name: name,
+        source: source,
+        sourceAccessToken: sourceAT,
+        dataSourceModel: calendarHatModels[name],
+        dataSourceModelId: null,
+        hatIdMapping: null
+      };
+    });
+
+    return HatDataSource.create(newDbEntries, callback);
+  });
 };
 
 exports.createCalendar = (url, dataSources, callback) => {
