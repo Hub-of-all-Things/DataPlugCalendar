@@ -178,11 +178,19 @@ h1, h2, h3, h4, h5, h6,
   font-size: 1.1em;
 }
 
+.break-words {
+  word-break: break-all;
+}
+
+.link-look-alike {
+  text-decoration: underline;
+}
+
 .error-message {
   width: 100%;
   text-align: center;
   padding: 1.5em;
   font-size: 0.8em;
-  border: 1px solid #cc8800;
-  background-color: #ffc34d;
+  border: 1px solid #c41512;
+  background-color: #bc3333;
 }
