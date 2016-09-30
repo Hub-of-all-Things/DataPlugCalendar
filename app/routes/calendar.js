@@ -7,6 +7,7 @@ const errors = require('../errors');
 const helpers = require('../helpers');
 
 const db = require('../services/db.service');
+const ical = require('../services/ical.service');
 const update = require('../services/update.service');
 
 const calendarRegisterForm = require('../views/calendarRegisterForm.marko');
@@ -21,7 +22,7 @@ router.get('/', (req, res, next) => {
 }, errors.renderErrorPage);
 
 router.post('/', (req, res, next) => {
-  if (!req.body['calendarUrl']) {
+  if (!req.body['calendarUrl'] || !ical.validateCalendarLink(req.body['calendarUrl'])) {
     return res.marko(calendarRegisterForm, {
       hat: req.session.hat
     });

@@ -1,34 +1,16 @@
 body {
-  font-family: 'Open Sans Condensed', sans-serif;
+  font-family: 'Open Sans Regular', sans-serif;
   background-color: #262626;
   color: #ffffff;
-  font-weight: 500;
-}
-body ::-webkit-input-placeholder {
-  /* WebKit browsers */
-  font-family: 'Open Sans Condensed', sans-serif;
-  color: rgba(255, 255, 255, 0.8);
   font-weight: 300;
+  font-size: 11px;
+  margin-bottom: 6em;
 }
-body :-moz-placeholder {
-  /* Mozilla Firefox 4 to 18 */
+
+h1, h2, h3, h4, h5, h6,
+.container .plug-button,
+.navbar-brand .brand {
   font-family: 'Open Sans Condensed', sans-serif;
-  color: rgba(255, 255, 255, 0.8);
-  opacity: 1;
-  font-weight: 300;
-}
-body ::-moz-placeholder {
-  /* Mozilla Firefox 19+ */
-  font-family: 'Open Sans Condensed', sans-serif;
-  color: rgba(255, 255, 255, 0.8);
-  opacity: 1;
-  font-weight: 300;
-}
-body :-ms-input-placeholder {
-  /* Internet Explorer 10+ */
-  font-family: 'Open Sans Condensed', sans-serif;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
 }
 
 .navbar {
@@ -41,9 +23,41 @@ body :-ms-input-placeholder {
   margin-top: 1em;
 }
 
+.navbar-nav {
+  margin-top: 0.75em;
+}
+
+.navbar-nav > li > a {
+  padding: 0;
+}
+
+.navbar-nav > li > a,
+.navbar-nav > li > p {
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 1.75em;
+  border: 0;
+  padding: 0.5em 0.5em;
+  color: white;
+  line-height: 0;
+}
+
+.navbar-nav > li > a:hover {
+  background-color: transparent;
+}
+
+.user-nav {
+  margin-top: 0.8em;
+  padding: 0.5em 0.5em;
+  border-left: solid 0.05em #ffffff;
+}
+
+.user-nav:first-child {
+  border: none;
+}
+
 .brand {
   padding: 1em;
-  font-size: 2em;
+  font-size: 1.5em;
   color: #ffffff;
   text-decoration: none;
 }
@@ -101,7 +115,7 @@ body :-ms-input-placeholder {
   display: block;
   text-align: center;
   font-size: 1.3em;
-  font-family: 'Open Sans Condensed', sans-serif;
+  font-family: 'Open Sans Regular', sans-serif;
   -webkit-transition-duration: 0.5s;
           transition-duration: 0.5s;
   font-weight: 300;
@@ -141,6 +155,34 @@ body :-ms-input-placeholder {
   color: #ffffff;
 }
 
+.data-group .body {
+  font-size: 0.9em;
+  line-height: 1.8;
+  margin-top: 0;
+  margin-bottom: 2em;
+  padding: 2em 2em;
+  border: 1px solid white;
+}
+
+.data-group h4 {
+  text-transform: uppercase;
+  margin: 0;
+  margin-top: 2em;
+  padding: 0.75em 1.5em;
+  background-color: white;
+  color: #262626;
+  display: inline-block;
+}
+
 .info {
   font-size: 1.1em;
+}
+
+.error-message {
+  width: 100%;
+  text-align: center;
+  padding: 1.5em;
+  font-size: 0.8em;
+  border: 1px solid #cc8800;
+  background-color: #ffc34d;
 }

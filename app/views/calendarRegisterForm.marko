@@ -4,16 +4,43 @@
 
     <p class="plug-info">Provide a link to the calendar to synchronise with.</p>
 
-    <form class="container calendar-link" name="calendarLink" method="post" action="/calendar">
+    <form class="container calendar-link" id="calendar-link" name="calendarLink" method="post" action="/calendar">
 
       <div class="form-group">
-        <label for="calendar-url">Calendar Address</label>
-        <input type="text" id="calendar-url" name="calendarUrl" placeholder="Calendar URL Address" />
+        <!--<label for="calendar-url">Calendar Address</label>-->
+        <input type="text" id="calendar-url" name="calendarUrl" placeholder="Calendar URL Address" style="margin-bottom: 1em;" required />
+        <div id="error-message" class="error-message" hidden></div>
       </div>
 
       <div class="form-group actions">
         <button class="plug-button" type="submit">Link Calendar</button>
       </div>
     </form>
+
+    <script>
+      function isValidUrl(urlString) {
+        var urlRegex = new RegExp("^(http:\/\/|https:\/\/){1}([0-9A-Za-z%-\/\.]+\.ics)$");
+
+        return urlRegex.test(urlString);
+      }
+
+      $("#calendar-url").focus(function() {
+        $(this).val('');
+        $("#error-message").hide();
+      });
+
+      $("#calendar-link").submit(function(event) {
+        var userInputField = $("#calendar-url");
+
+        if (!isValidUrl(userInputField.val())) {
+          event.preventDefault();
+
+          var errorMessage = $("#error-message");
+          errorMessage.text("The provided URL does not match required format. Please make sure that your link follows the expected format: http://yourgooglecalendarlink.ics");
+          errorMessage.toggle();
+          return;
+        }
+      });
+    </script>
   </layout-put>
 </layout-use>

@@ -7,6 +7,12 @@ const _ = require('lodash');
 
 var internals = {};
 
+exports.validateCalendarLink = (url) => {
+  let urlRegex = new RegExp("^(http:\/\/|https:\/\/){1}([0-9A-Za-z%-\/\.]+\.ics)$");
+
+  return urlRegex.test(url);
+};
+
 exports.getCalendarData = (calendar, callback) => {
 
   const reqOptions = { url: calendar.url, json: false };
